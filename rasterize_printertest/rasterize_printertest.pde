@@ -22,6 +22,7 @@ int yOffset=150;
 float scale=1;
 
 boolean penIsUp=false;
+boolean redraw=false;
 
 
 
@@ -102,12 +103,43 @@ void setup() {
     .setValue(1)
     .setGroup(g2)
     ;
+
+
+  Group g3 = cp5.addGroup("g3")
+    .setPosition(10, 270)
+    .setWidth(100)
+    .setBackgroundHeight(100)
+    .setBackgroundColor(color(50, 50))
+    ;
+
+  cp5.addSlider("XResolution")
+    .setPosition(10, 10)
+    .setSize(80, 20)
+    .setRange(1, 30)
+    .setValue(10)
+    //.setNumberOfTickMarks(5)
+
+    .setGroup(g3)
+    ;
+
+  cp5.addSlider("YResolution")
+    .setPosition(10, 40)
+    .setSize(80, 20)
+    .setRange(1, 30)
+    .setValue(20)
+    //.setNumberOfTickMarks(5)
+
+    .setGroup(g3)
+    ;
 }
 
 void draw() {
   if (done)sendFeed();
-  background(255);
-  drawRaster();
+  if (redraw) {
+    background(255);
+    drawRaster();
+    redraw=false;
+  }
 }
 
 
@@ -164,6 +196,7 @@ void drawRaster() {
         drawToY=(rY+dil)*scale;
         stroke(0, 0, 255);
         line(drawFromX, drawFromY, drawToX, drawToY);
+
         drawFromX=drawToX;
         drawFromY=drawToY;
         dil*=-1;
@@ -172,16 +205,17 @@ void drawRaster() {
       // close Gaps 
       if (drawFromX<(rX+resolutionX)*scale) {
         // stroke(255,0,0);
-         line(drawFromX, drawFromY, (rX+resolutionX)*scale, rY*scale);
+        line(drawFromX, drawFromY, (rX+resolutionX)*scale, rY*scale);
       }
     }
   }
 }
 
 
-void rasterify() {
+void printRaster() {
   // since the text is just black and white, converting the image
   // to grayscale seems a little more accurate when calculating brightness
+  //img.resize(int(img.width*scale), int(img.height*scale));
   img.filter(GRAY);
   img.loadPixels();
 
@@ -200,10 +234,7 @@ void rasterify() {
   // grab the color of every nth pixel in the image
 
   for (int y = resolutionY/2; y < img.height-resolutionY; y += resolutionY) {
-    float bx=0;
     float lastY=y;
-
-    moveTo(0+xOffset, y+yOffset);
 
     for (int x = 0; x < img.width-resolutionX; x += resolutionX) {
       //Get the colorvalue
@@ -216,49 +247,34 @@ void rasterify() {
       float stepsize=resolutionX/steps;
 
 
-      float lastX=x;
 
-      // moveTo(int(lastX+xOffset), int(lastY+yOffset));
+      float rX=x+xOffset;
+      float rY=y+yOffset;
+      float drawFromX=rX*scale;
+      float drawToX=rX;
+      float drawFromY=rY*scale;
+      float drawToY=rY;
+
+      moveTo(int(drawFromX), int(drawFromY));
 
 
       for (float i=stepsize; i<=resolutionX; i+=stepsize) {
-        stroke(0, 0, 255);
-        line(lastX+xOffset, lastY+yOffset, x+i+xOffset, y+dil+yOffset);
-        drawTo(int(x+i+xOffset), int(y+dil+yOffset));
-
-        lastX=x+i;
-        lastY=y+dil;
+        drawToX=(rX+i)*scale;
+        drawToY=(rY+dil)*scale;
+        stroke(0, 255, 0);
+        line(drawFromX, drawFromY, drawToX, drawToY);
+        drawTo(drawToX, drawToY);
+        drawFromX=drawToX;
+        drawFromY=drawToY;
         dil*=-1;
       }
 
       // close Gaps 
-      if (lastX<x+resolutionX) {
-        line(lastX+xOffset, lastY+yOffset, x+resolutionX+xOffset, y+dil+yOffset);
-        drawTo(int(x+resolutionX+xOffset), int(y+dil+yOffset));
-        lastY=y+dil;
+      if (drawFromX<(rX+resolutionX)*scale) {
+        // stroke(255,0,0);
+        line(drawFromX, drawFromY, (rX+resolutionX)*scale, rY*scale);
+        drawTo((rX+resolutionX)*scale, rY*scale);
       }
-
-      /*
-
-       float xoff=bx;
-       
-       fill(0);
-       stroke(0);
-       if (brightness(pix)>threshold) {
-       stroke(255, 0, 0);
-       //  bx+=resolutionX;
-       //continue;//
-       }
-       
-       // if (random(1)>0.5) dil*=-1;
-       // generate peaks / lines
-       for (int s1 = step; s1 <= resolutionX; s1 +=step) {
-       line(xoff, lastY, bx+s1, y+dil);
-       xoff=bx+s1;
-       lastY=y+dil;
-       dil*=-1;
-       }
-       bx=x;*/
     }
   }
 }
@@ -335,7 +351,7 @@ void keyPressed() {
   }
 
   if (key=='r') {
-    rasterify();
+    printRaster();
   }
 }
 
@@ -349,7 +365,7 @@ void moveTo(float posX, float posY) {
   commands.append(cmd);
 }
 
-void drawTo(int posX, int posY) {
+void drawTo(float posX, float posY) {
   if (penIsUp)penDown();
 
   // remap coordinates
@@ -358,7 +374,6 @@ void drawTo(int posX, int posY) {
 
   String cmd = "G1 X"+posX+" Y"+posY;
   commands.append(cmd);
-  //penUp();
 }
 
 void penUp() {
@@ -438,5 +453,14 @@ void controlEvent(ControlEvent theEvent) {
     if (theEvent.getController().getName().equals("Scale")) {
       scale=theEvent.getController().getValue();
     }
+
+    if (theEvent.getController().getName().equals("XResolution")) {
+      resolutionX=int(theEvent.getController().getValue());
+    }
+
+    if (theEvent.getController().getName().equals("YResolution")) {
+      resolutionY=int(theEvent.getController().getValue());
+    }
   }
+  redraw=true;
 }
