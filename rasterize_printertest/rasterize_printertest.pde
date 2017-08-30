@@ -371,7 +371,7 @@ void keyPressed() {
 }
 
 void moveTo(float posX, float posY) {
-  if (!penIsUp)penUp();
+  penUp();
   // remap coordinates
   posX=width/2-posX;
   posY=height-posY;
