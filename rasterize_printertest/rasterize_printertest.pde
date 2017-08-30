@@ -36,7 +36,7 @@ void setup() {
   printArray(Serial.list());
   pixelDensity(2);
   try {
-    myPort = new Serial(this, Serial.list()[5], 115200);
+    myPort = new Serial(this, Serial.list()[3], 115200);
     myPort.clear();
     myPort.bufferUntil(lf);
     isConnected=true;
@@ -83,7 +83,7 @@ void setup() {
   cp5.addSlider("XPos")
     .setPosition(10, 10)
     .setSize(180, 20)
-    .setRange(0, width)
+    .setRange(0, width*2)
     .setValue(width/2-200)
     .setGroup(g2)
     ;
@@ -91,7 +91,7 @@ void setup() {
   cp5.addSlider("YPos")
     .setPosition(10, 40)
     .setSize(180, 20)
-    .setRange(0, height)
+    .setRange(0, height*2)
     .setValue(100)
     .setGroup(g2)
     ;
@@ -233,8 +233,26 @@ void printRaster() {
 
   // grab the color of every nth pixel in the image
 
+
+
+    float rX=0;
+    float rY=0;
+
+    float drawFromX=0;
+    float drawToX=0;
+    float drawFromY=0;
+    float drawToY=0;
+
+
   for (int y = resolutionY/2; y < img.height-resolutionY; y += resolutionY) {
-    float lastY=y;
+     rY=y+yOffset;
+     drawFromY=rY*scale;
+     rX=xOffset;
+     drawFromX=rX*scale;
+     
+     moveTo(int(drawFromX), int(drawFromY));
+
+
 
     for (int x = 0; x < img.width-resolutionX; x += resolutionX) {
       //Get the colorvalue
@@ -247,15 +265,12 @@ void printRaster() {
       float stepsize=resolutionX/steps;
 
 
+      rX=x+xOffset;
+      drawFromX=rX*scale;
+      drawToX=rX;
+      drawFromY=rY*scale;
+      drawToY=rY;
 
-      float rX=x+xOffset;
-      float rY=y+yOffset;
-      float drawFromX=rX*scale;
-      float drawToX=rX;
-      float drawFromY=rY*scale;
-      float drawToY=rY;
-
-      moveTo(int(drawFromX), int(drawFromY));
 
 
       for (float i=stepsize; i<=resolutionX; i+=stepsize) {
@@ -383,7 +398,7 @@ void penUp() {
 }
 
 void penDown() {
-  String cmd = "M1 60d";
+  String cmd = "M1 70d";
   commands.append(cmd);
   penIsUp=false;
 }
@@ -429,10 +444,7 @@ void controlEvent(ControlEvent theEvent) {
       +", isOpen? "+theEvent.getGroup().isOpen()
       );
   } else if (theEvent.isController()) {
-    println("got something from a controller "
-      +theEvent.getController().getName()
-      );
-
+   
 
     if (theEvent.getController().getName().equals("Pen Up")) {
       if (isConnected)penUp();
