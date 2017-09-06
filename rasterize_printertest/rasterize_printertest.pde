@@ -1,6 +1,12 @@
 import processing.serial.*;
 
+
+
 Serial  myPort;
+
+// PORT sieht man in der Konsole. muss irgendwas mit wchusbserial sein
+int port=5;
+
 boolean isConnected=false;
 int     lf = 10;       //ASCII linefeed
 String  inString;      //String for testing serial communication
@@ -36,7 +42,7 @@ void setup() {
   printArray(Serial.list());
   pixelDensity(2);
   try {
-    myPort = new Serial(this, Serial.list()[3], 115200);
+    myPort = new Serial(this, Serial.list()[port], 115200);
     myPort.clear();
     myPort.bufferUntil(lf);
     isConnected=true;
@@ -78,13 +84,13 @@ void setup() {
     .setBackgroundColor(color(50, 80))
     .setBackgroundHeight(100)
     .setLabel("Hello World.")
-    ;
+    ; 
 
   cp5.addSlider("XPos")
     .setPosition(10, 10)
     .setSize(180, 20)
     .setRange(0, width*2)
-    .setValue(width/2-200)
+    .setValue(334)
     .setGroup(g2)
     ;
 
@@ -92,7 +98,7 @@ void setup() {
     .setPosition(10, 40)
     .setSize(180, 20)
     .setRange(0, height*2)
-    .setValue(100)
+    .setValue(170)
     .setGroup(g2)
     ;
 
@@ -126,7 +132,7 @@ void setup() {
     .setPosition(10, 40)
     .setSize(80, 20)
     .setRange(1, 30)
-    .setValue(20)
+    .setValue(10)
     //.setNumberOfTickMarks(5)
 
     .setGroup(g3)
@@ -346,7 +352,7 @@ void keyPressed() {
     goHome();
   }
 
-  if (key=='p') {
+  if (key=='d') {
     int xPos =width/2-mouseX;
     int yPos =height-mouseY;
     drawTo(xPos, yPos);
@@ -365,7 +371,7 @@ void keyPressed() {
     penDown();
   }
 
-  if (key=='r') {
+  if (key=='p') {
     printRaster();
   }
 }
