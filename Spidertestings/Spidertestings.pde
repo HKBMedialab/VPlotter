@@ -12,7 +12,7 @@ void setup() {
   printArray(Serial.list());
   pixelDensity(2);
   try {
-    myPort = new Serial(this, Serial.list()[5], 115200);
+    myPort = new Serial(this, Serial.list()[3], 115200);
     myPort.clear();
     myPort.bufferUntil(lf);
   }
